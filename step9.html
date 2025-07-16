@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Step 9 - Final Details</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<h1>Character Creation - Step 9</h1>
+
+<h2>Final Details</h2>
+<div id="error" style="color:red; margin-bottom:10px;"></div>
+
+<label>Name:<br/>
+  <input type="text" id="name" />
+</label>
+<br/>
+<label>Height (in feet):<br/>
+  <input type="number" id="height" step="0.1" />
+</label>
+
+<div class="question">
+  <label>What is immediately noticeable about your character physically (gender, age, height, clothing, etc.)?</label><br/>
+  <textarea id="noticeable" rows="3" cols="70"></textarea>
+</div>
+
+<div class="question">
+  <label id="extraQuestion"></label><br/>
+  <textarea id="extraAnswer" rows="3" cols="70"></textarea>
+</div>
+
+<button onclick="back()">Back</button>
+<button onclick="saveDetails()">Finish Character</button>
+
+<script>
+const extraQuestions = [
+  "Why does everyone remember your character after meeting them?",
+  "How is your character’s speaking voice distinctive?",
+  "What makes your character fun to be around?"
+];
+const selectedQuestion = extraQuestions[Math.floor(Math.random()*extraQuestions.length)];
+document.getElementById("extraQuestion").textContent = selectedQuestion;
+
+function saveDetails() {
+  const name = document.getElementById("name").value.trim();
+  const heightVal = parseFloat(document.getElementById("height").value);
+  const noticeable = document.getElementById("noticeable").value.trim();
+  const extra = document.getElementById("extraAnswer").value.trim();
+
+  if (!name || isNaN(heightVal) || !noticeable || !extra) {
+    document.getElementById("error").textContent = "Please fill in all fields.";
+    return;
+  }
+
+  const details = {
+    name,
+    height: Math.round(heightVal),
+    noticeable,
+    question: selectedQuestion,
+    extraAnswer: extra
+  };
+  localStorage.setItem("finalDetails", JSON.stringify(details));
+  window.location.href = "summary.html";
+}
+
+function back() {
+  window.location.href = "step7.html";
+}
+</script>
+
+</body>
+</html>

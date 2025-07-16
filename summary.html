@@ -57,6 +57,8 @@
 
 <h1>Character Summary</h1>
 
+<div class="section" id="finalDetailsSection"></div>
+
 <div class="flex-row">
   <div class="section flex-item" id="attributesSection"></div>
   <div class="section flex-item" id="derivedSection"></div>
@@ -75,10 +77,23 @@ const domains = JSON.parse(localStorage.getItem("domainAssignments") || "{}");
 let attributes = JSON.parse(localStorage.getItem("finalAttributes") || "{}");
 const priorities = JSON.parse(localStorage.getItem("priorities") || "{}");
 const assetPairs = JSON.parse(localStorage.getItem("assetPairs") || "[]");
+const finalDetails = JSON.parse(localStorage.getItem("finalDetails") || "{}");
+
+const finalDiv = document.getElementById("finalDetailsSection");
 
 const attributesDiv = document.getElementById("attributesSection");
 const derivedDiv = document.getElementById("derivedSection");
 const otherDiv = document.getElementById("otherSections");
+
+let finalHtml = `<h2>Basic Info</h2>`;
+if (Object.keys(finalDetails).length === 0) {
+  finalHtml += `<p>No data.</p>`;
+} else {
+  finalHtml += `<p><strong>Name:</strong> ${finalDetails.name}<br/><strong>Height:</strong> ${finalDetails.height} ft</p>`;
+  finalHtml += `<p><em>What is immediately noticeable about your character physically (gender, age, height, clothing, etc.)?</em><br/>${finalDetails.noticeable}</p>`;
+  finalHtml += `<p><em>${finalDetails.question}</em><br/>${finalDetails.extraAnswer}</p>`;
+}
+finalDiv.innerHTML = finalHtml;
 
 // Apply racial +1 bonuses
 if (heritage && heritage.length > 0 && attributes && Object.keys(attributes).length > 0) {
