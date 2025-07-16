@@ -1,0 +1,78 @@
+body {
+  font-family: Arial, sans-serif;
+  max-width: 900px;
+  margin: 20px auto;
+  background: #f9f9f9;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+h1 {
+  font-size: 1.8em;
+}
+
+h2 {
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 4px;
+  font-size: 1.4em;
+}
+
+.question {
+  margin-bottom: 15px;
+}
+
+button {
+  margin-top: 10px;
+  padding: 6px 12px;
+}
+
+.split {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.split div {
+  flex: 1;
+  min-width: 300px;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 4px;
+}
+
+.list li {
+  background: #fff;
+  margin: 0;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  cursor: grab;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+}
+
+.list li:last-child {
+  border-bottom: none;
+}
+
+.benefit,
+.asset,
+.attribute,
+.rating {
+  margin: 5px 0;
+}
+
+.details-box {
+  background: #fff;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin: 10px 0;
+}

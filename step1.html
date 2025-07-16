@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Step 1 - Backdrop Questions</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<h1>Character Creation - Step 1</h1>
+
+<h2>Backdrop Questions</h2>
+<p>Answer 3–4 of the following questions to define your character's background.</p>
+<div id="questions"></div>
+<div id="error" style="color:red; margin-top:10px;"></div>
+<button onclick="saveAnswers()">Next: Assign Priorities</button>
+
+<script>
+// Categories
+const categories = {
+  "Motivation & Conflict": [
+    "When would your character decide it’s worth killing something—or someone?",
+    "Why is everyone afraid to get into a fight with your character?",
+    "Why does nothing deter your character when you set your mind to something?"
+  ],
+  "Learning & Obsession": [
+    "Why did your character spend more time in the library than anyone else they knew?",
+    "What field of learning or craft is your character obsessed with?",
+    "What secret knowledge does your character believe only they understand?"
+  ],
+  "Weapons & Power": [
+    "Why does your character feel so strongly about weapons?",
+    "Who taught you to fight, and why did you care so much about learning?",
+    "What weapon or tool does your character treat almost like an extension of themselves?"
+  ],
+  "Beliefs & Values": [
+    "What personal code or principle would you never compromise?",
+    "Which part of the old world do you feel must be restored, no matter the cost?",
+    "What would your character sacrifice everything for?"
+  ],
+  "Social Ties": [
+    "Who shaped your character’s earliest view of the world?",
+    "What reputation do you have among your peers?",
+    "Who do you trust without reservation—and why?"
+  ]
+};
+
+// Randomly pick 4 unique categories
+const shuffledCategories = Object.keys(categories).sort(() => 0.5 - Math.random()).slice(0,4);
+
+// For each selected category, pick one random question
+const selectedQuestions = shuffledCategories.map(category => {
+  const questions = categories[category];
+  const q = questions[Math.floor(Math.random()*questions.length)];
+  return {category, question: q};
+});
+
+// Render questions
+const container = document.getElementById("questions");
+selectedQuestions.forEach((item, idx) => {
+  const div = document.createElement("div");
+  div.className = "question";
+  div.innerHTML = `
+    <label>${item.question}</label><br/>
+    <textarea id="answer${idx}" rows="3" cols="70"></textarea>
+  `;
+  container.appendChild(div);
+});
+
+function saveAnswers() {
+  const answers = selectedQuestions.map((item, idx) => ({
+    question: item.question,
+    answer: document.getElementById(`answer${idx}`).value.trim()
+  }));
+
+  const filledCount = answers.filter(a => a.answer.length > 0).length;
+
+  if (filledCount < 3) {
+    document.getElementById("error").textContent = "Please answer at least 3 questions before proceeding.";
+    return;
+  }
+
+  localStorage.setItem("backdropAnswers", JSON.stringify(answers));
+  window.location.href = "step2.html";
+}
+</script>
+
+</body>
+</html>

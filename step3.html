@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Step 3 - Racial Heritage Benefits</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<h1>Character Creation - Step 3</h1>
+
+<h2>Racial Heritage Benefits</h2>
+<div id="benefit-container"></div>
+<div id="error" style="color:red; margin-top:10px;"></div>
+<button onclick="back()">Back</button>
+<button onclick="saveBenefits()">Next: Asset Questionnaire</button>
+
+<script>
+// All possible benefits
+const benefits = [
+  "Keen Vision",
+  "Low-Light Vision",
+  "Resilient Constitution",
+  "Ancient Memory",
+  "Natural Endurance",
+  "Innate Magic",
+  "Linguistic Memory",
+  "Ancestral Craft",
+  "+1 Agility",
+  "+1 Strength",
+  "+1 Willpower",
+  "+1 Perception",
+  "+1 Wit"
+];
+
+// Get saved priorities
+const priorities = JSON.parse(localStorage.getItem("priorities") || "{}");
+const racePriority = priorities["Race/Culture"] || "D";
+
+// Determine allowed benefits
+const allowed = { A:3, B:2, C:1, D:0 }[racePriority];
+
+// Container
+const container = document.getElementById("benefit-container");
+
+if (allowed === 0) {
+  container.innerHTML = "<p>You do not receive heritage benefits (Priority D).</p>";
+} else {
+  container.innerHTML = `<p>Select up to ${allowed} benefits:</p>`;
+  benefits.forEach(b => {
+    const div = document.createElement("div");
+    div.className = "benefit";
+    div.innerHTML = `<label><input type="checkbox" value="${b}"> ${b}</label>`;
+    container.appendChild(div);
+  });
+
+  container.dataset.allowed = allowed;
+  container.addEventListener("change", () => {
+    const checked = container.querySelectorAll("input:checked");
+    if (checked.length > allowed) {
+      checked[checked.length - 1].checked = false;
+    }
+  });
+}
+
+function saveBenefits() {
+  const selected = Array.from(document.querySelectorAll(".benefit input:checked"))
+    .map(input => input.value);
+
+  if (selected.length > allowed) {
+    document.getElementById("error").textContent = `You can select up to ${allowed} benefits.`;
+    return;
+  }
+
+  localStorage.setItem("heritageBenefits", JSON.stringify(selected));
+  window.location.href = "step4.html";
+}
+
+function back() {
+  window.location.href = "step2.html";
+}
+</script>
+
+</body>
+</html>

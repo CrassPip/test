@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Step 2 - Assign Priorities</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+</head>
+<body>
+
+<h1>Character Creation - Step 2</h1>
+
+<h2>Assign Priorities</h2>
+<p>Drag the categories so the most important is at the top (Priority A) and the least important at the bottom.</p>
+
+<div class="split">
+  <ul id="sortable" class="list">
+    <li data-category="Race/Culture">Race / Culture</li>
+    <li data-category="Social Class">Social Class</li>
+    <li data-category="Attributes">Attributes</li>
+    <li data-category="Assets">Assets</li>
+  </ul>
+  <div id="priority-details" class="details-box"></div>
+</div>
+
+<button onclick="back()">Back</button>
+<button id="nextButton" onclick="validatePriorities()">Next</button>
+
+<script>
+// Priority descriptions
+function describe(category, rating) {
+  const tables = {
+    "Race/Culture": {
+      A: "Pure-Blooded Fey or Siehe: 3 heritage benefits.",
+      B: "Major Demi-Human Heritage: 2 heritage benefits.",
+      C: "Mixed Heritage: 1 heritage benefit.",
+      D: "Predominantly Human: No heritage benefits."
+    },
+    "Social Class": {
+      A: "Nobility: 200 gold, land ownership, high status.",
+      B: "High Freemen: 80 gold, respected trades.",
+      C: "Low Freemen: 25 gold, working class.",
+      D: "Peasants: 5 gold, minimal rights."
+    },
+    "Attributes": {
+      A: "14 Attribute Points.",
+      B: "10 Attribute Points.",
+      C: "6 Attribute Points.",
+      D: "4 Attribute Points."
+    },
+    "Assets": {
+      A: "20 Asset Points.",
+      B: "15 Asset Points.",
+      C: "10 Asset Points.",
+      D: "5 Asset Points."
+    }
+  };
+  return tables[category][rating];
+}
+
+// Update priority details
+function updateDetails() {
+  const items = document.querySelectorAll("#sortable li");
+  let html = "<h3>Assigned Ratings:</h3>";
+  items.forEach((li, idx) => {
+    const rating = ["A","B","C","D"][idx];
+    html += `<p><strong>${li.textContent}</strong> (Rating ${rating}):<br/>${describe(li.dataset.category, rating)}</p>`;
+  });
+  document.getElementById("priority-details").innerHTML = html;
+}
+
+// Update Next button label
+function updateNextButtonLabel() {
+  const items = document.querySelectorAll("#sortable li");
+  const raceRating = ["A","B","C","D"][
+    [...items].findIndex(li => li.dataset.category==="Race/Culture")
+  ];
+  const button = document.getElementById("nextButton");
+  if (raceRating === "D") {
+    button.textContent = "Next: Asset Questionnaire";
+  } else {
+    button.textContent = "Next: Racial Heritage";
+  }
+}
+
+// Save priorities and go to next step
+function validatePriorities() {
+  updateDetails(); // Ensure latest order
+  const items = document.querySelectorAll("#sortable li");
+  const priorities = {};
+  items.forEach((li, idx) => {
+    priorities[li.dataset.category] = ["A","B","C","D"][idx];
+  });
+  localStorage.setItem("priorities", JSON.stringify(priorities));
+
+  if (priorities["Race/Culture"] === "D") {
+    window.location.href = "step4.html";
+  } else {
+    window.location.href = "step3.html";
+  }
+}
+
+// Back navigation
+function back() {
+  window.location.href = "step1.html";
+}
+
+// Initialize Sortable
+Sortable.create(document.getElementById("sortable"), {
+  animation:150,
+  onSort: () => {
+    updateDetails();
+    updateNextButtonLabel();
+  }
+});
+
+// Initial update
+updateDetails();
+updateNextButtonLabel();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Step 4 - Asset Questionnaire</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .asset-pair {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+      padding: 10px;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Character Creation - Step 4</h1>
+
+<h2>Asset Questionnaire</h2>
+<p>Answer at least 5 of the following question pairs. Leave 1 blank if you prefer.</p>
+
+<div id="error" style="color:red; margin-bottom:10px;"></div>
+
+<div id="assetPairs"></div>
+
+<button onclick="back()">Back</button>
+<button onclick="saveAssets()">Next: Spend Asset Points</button>
+
+<script>
+// Categories with question pairs
+const categories = [
+  {
+    name: "Tools & Equipment",
+    pairs: [
+      [
+        "What object does your character have for self-defense?",
+        "Why does this work especially well in darkness or uncertainty?"
+      ],
+      [
+        "What object helps your character bypass threats or obstacles?",
+        "Why is it difficult for your character to use or maintain this item?"
+      ],
+      [
+        "What does your character have that’s useful for jury-rigging or improvising?",
+        "What did your character sacrifice or trade to acquire it?"
+      ]
+    ]
+  },
+  {
+    name: "Physical Capacities",
+    pairs: [
+      [
+        "What is your character’s exceptional athletic ability?",
+        "How did a mentor or guide hone this skill?"
+      ],
+      [
+        "What ability lets your character endure extreme physical hardship?",
+        "What specific ordeal built this resilience?"
+      ],
+      [
+        "What unique movement skill does your character excel at (climbing, swimming, vaulting)?",
+        "Where did they master this ability?"
+      ]
+    ]
+  },
+  {
+    name: "Knowledge & Skills",
+    pairs: [
+      [
+        "What field of knowledge is your character obsessed with?",
+        "Why was studying it so difficult or dangerous?"
+      ],
+      [
+        "What makes your character skilled at repairing or maintaining things?",
+        "What event proved this skill in a crisis?"
+      ],
+      [
+        "What practical skill has studying history or lore given your character?",
+        "Why can they still apply it under pressure?"
+      ]
+    ]
+  },
+  {
+    name: "Relationships & Contacts",
+    pairs: [
+      [
+        "What contact does your character have who knows all about strange creatures or secrets?",
+        "How did a family member or mentor make this relationship possible?"
+      ],
+      [
+        "Who is the person your character can turn to for equipment or shelter?",
+        "What debt or favor binds you together?"
+      ],
+      [
+        "Who taught your character a skill most people don’t trust?",
+        "Why did they choose you as their student?"
+      ]
+    ]
+  },
+  {
+    name: "Resilience & Hardship",
+    pairs: [
+      [
+        "How can your character help a sick or injured companion?",
+        "What extreme survival situation forced them to learn this?"
+      ],
+      [
+        "What adverse experience taught your character to relate to very different creatures or cultures?",
+        "What lasting impact did it leave?"
+      ],
+      [
+        "What experience made your character impossible to intimidate?",
+        "What was the cost of that lesson?"
+      ]
+    ]
+  },
+  {
+    name: "Combat Proficiency",
+    pairs: [
+      [
+        "What weapon or fighting style does your character trust most in a real fight?",
+        "Who taught you to use it—or why did you have to learn on your own?"
+      ],
+      [
+        "What form of combat has your character mastered?",
+        "What event proved this skill under pressure?"
+      ]
+    ]
+  }
+];
+
+// Randomly pick one pair per category
+const selectedPairs = categories.map(cat => {
+  const pair = cat.pairs[Math.floor(Math.random()*cat.pairs.length)];
+  return { category: cat.name, pair };
+});
+
+// Render pairs
+const container = document.getElementById("assetPairs");
+selectedPairs.forEach((item, idx) => {
+  const div = document.createElement("div");
+  div.className = "asset-pair";
+  div.innerHTML = `
+    <strong>${item.pair[0]}</strong><br/>
+    <textarea id="q${idx}_1" rows="2" cols="70"></textarea><br/>
+    <strong>${item.pair[1]}</strong><br/>
+    <textarea id="q${idx}_2" rows="2" cols="70"></textarea>
+  `;
+  container.appendChild(div);
+});
+
+function saveAssets() {
+  const assets = [];
+  let answeredCount = 0;
+
+  selectedPairs.forEach((item, idx) => {
+    const a1 = document.getElementById(`q${idx}_1`).value.trim();
+    const a2 = document.getElementById(`q${idx}_2`).value.trim();
+
+    if (a1 || a2) {
+      answeredCount++;
+      if (!a1 || !a2) {
+        document.getElementById("error").textContent = "All answered pairs must have both answers filled.";
+        return;
+      }
+      assets.push({
+        category: item.category,
+        question1: item.pair[0],
+        answer1: a1,
+        question2: item.pair[1],
+        answer2: a2
+      });
+    }
+  });
+
+  if (answeredCount < 5) {
+    document.getElementById("error").textContent = "Please complete at least 5 pairs.";
+    return;
+  }
+
+  localStorage.setItem("assetPairs", JSON.stringify(assets));
+  window.location.href = "step5.html";
+}
+
+function back() {
+  const priorities = JSON.parse(localStorage.getItem("priorities") || "{}");
+  if (priorities["Race/Culture"] === "D") {
+    window.location.href = "step2.html";
+  } else {
+    window.location.href = "step3.html";
+  }
+}
+</script>
+
+</body>
+</html>

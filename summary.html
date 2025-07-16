@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Character Summary</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .section {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 15px;
+      background: #fff;
+    }
+    .flex-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .flex-item {
+      flex: 1;
+      min-width: 300px;
+    }
+    .attribute-grid {
+      display: grid;
+      grid-template-columns: 1fr repeat(3, 1fr);
+      gap: 5px;
+      margin-top: 10px;
+    }
+    .cell {
+      border: 1px solid #ccc;
+      background: #f9f9f9;
+      padding: 6px;
+      text-align: center;
+      border-radius: 4px;
+    }
+    .header-cell {
+      font-weight: bold;
+      background: #eee;
+    }
+    .asset-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .asset-box {
+      border: 1px solid #ccc;
+      background: #fff;
+      padding: 10px;
+      border-radius: 4px;
+      min-height: 100px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Character Summary</h1>
+
+<div class="flex-row">
+  <div class="section flex-item" id="attributesSection"></div>
+  <div class="section flex-item" id="derivedSection"></div>
+</div>
+
+<div id="otherSections"></div>
+
+<button onclick="startOver()">Start Over</button>
+
+<script>
+// Retrieve stored data
+const backdrop = JSON.parse(localStorage.getItem("backdropAnswers") || "[]");
+const heritage = JSON.parse(localStorage.getItem("heritageBenefits") || "[]");
+const assets = JSON.parse(localStorage.getItem("assetRatings") || "[]");
+const domains = JSON.parse(localStorage.getItem("domainAssignments") || "{}");
+let attributes = JSON.parse(localStorage.getItem("finalAttributes") || "{}");
+const priorities = JSON.parse(localStorage.getItem("priorities") || "{}");
+const assetPairs = JSON.parse(localStorage.getItem("assetPairs") || "[]");
+
+const attributesDiv = document.getElementById("attributesSection");
+const derivedDiv = document.getElementById("derivedSection");
+const otherDiv = document.getElementById("otherSections");
+
+// Apply racial +1 bonuses
+if (heritage && heritage.length > 0 && attributes && Object.keys(attributes).length > 0) {
+  heritage.forEach(bonus => {
+    const match = bonus.match(/^\+1 (\w+)/);
+    if (match) {
+      const attr = match[1];
+      if (attributes[attr] !== undefined) {
+        attributes[attr]++;
+      }
+    }
+  });
+}
+
+// Derived stats
+let reflex = "-";
+let aim = "-";
+let knockdown = "-";
+let knockout = "-";
+let endurance = "-";
+let move = "Depends on Height and Agility";
+
+if (attributes && Object.keys(attributes).length > 0) {
+  const agility = attributes["Agility"] || 0;
+  const wit = attributes["Wit"] || 0;
+  const perception = attributes["Perception"] || 0;
+  const toughness = attributes["Toughness"] || 0;
+  const strength = attributes["Strength"] || 0;
+  const willpower = attributes["Willpower"] || 0;
+
+  reflex = Math.floor((agility + wit) / 2);
+  aim = Math.floor((perception + agility) / 2);
+  knockdown = toughness + strength;
+  knockout = toughness + willpower;
+  endurance = Math.floor((toughness + willpower) / 2);
+}
+
+// Social Class
+const socialRating = priorities["Social Class"] || "D";
+const socialClassDescriptions = {
+  A: {
+    title: "Nobility",
+    text: `You are a member of the landowning aristocracy...`,
+    privileges: [
+      "Full rights to own land, bear all weapons and armor, and command retainers.",
+      "May hold formal titles such as Lord or Lady."
+    ],
+    obligations: [
+      "Expected to contribute to military levies or civic duties when called upon."
+    ]
+  },
+  B: {
+    title: "High Freemen",
+    text: `You belong to the upper echelons of free society...`,
+    privileges: [
+      "Broad freedom of movement.",
+      "Ownership of property, workshops, and valuable equipment.",
+      "May bear most weapons without question."
+    ],
+    obligations: [
+      "Respected and often influential, though not noble."
+    ]
+  },
+  C: {
+    title: "Low Freemen",
+    text: `You are a working person...`,
+    privileges: [
+      "Right to own modest property.",
+      "May bear simple weapons and basic armor."
+    ],
+    obligations: [
+      "Working class, often reliant on patrons or employers."
+    ]
+  },
+  D: {
+    title: "Peasants & Paupers",
+    text: `You exist at the margins...`,
+    privileges: [
+      "Few legal rights or protections.",
+      "Limited access to weapons or armor."
+    ],
+    obligations: [
+      "Often dependent on lords or overseers for livelihood.",
+      "May be subject to taxes, tithes, or obligations beyond your control."
+    ]
+  }
+};
+const socialData = socialClassDescriptions[socialRating];
+
+// Attributes Matrix
+let attrHtml = `<h2>Attributes</h2>`;
+if (Object.keys(attributes).length === 0 || Object.keys(domains).length === 0) {
+  attrHtml += `<p>No data.</p>`;
+} else {
+  const rows = ["Power","Speed","Precision","Resilience"];
+  const cols = ["Physical","Mental","Social"];
+  const labels = {
+    "Power": ["Strength","Intelligence","Leadership"],
+    "Speed": ["Agility","Wit","Repartee"],
+    "Precision": ["Dexterity","Perception","Tact"],
+    "Resilience": ["Toughness","Willpower","Composure"]
+  };
+
+  attrHtml += `<div class="attribute-grid">
+    <div class="header-cell"></div>
+    ${cols.map(col=>`<div class="header-cell">${col} (${domains[col]})</div>`).join('')}
+  `;
+  rows.forEach(row => {
+    attrHtml += `<div class="header-cell">${row} (${domains[row]})</div>`;
+    cols.forEach((col, idx) => {
+      const attr = labels[row][idx];
+      attrHtml += `<div class="cell"><strong>${attr}</strong><br/>${attributes[attr]}</div>`;
+    });
+  });
+  attrHtml += `</div>`;
+}
+attributesDiv.innerHTML = attrHtml;
+
+// Derived Stats
+let derivedHtml = `<h2>Derived Stats</h2><ul>
+  <li><strong>Reflex:</strong> ${reflex}</li>
+  <li><strong>Aim:</strong> ${aim}</li>
+  <li><strong>Knockdown:</strong> ${knockdown}</li>
+  <li><strong>Knockout:</strong> ${knockout}</li>
+  <li><strong>Endurance:</strong> ${endurance}</li>
+  <li><strong>Move:</strong> ${move}</li>
+</ul>`;
+derivedDiv.innerHTML = derivedHtml;
+
+// Other Sections
+let html = "";
+
+// Assets
+html += `<div class="section"><h2>Assets</h2>`;
+if (assets.length === 0) {
+  html += `<p>No data.</p>`;
+} else {
+  html += `<div class="asset-grid">`;
+  assets.forEach(a => {
+    html += `<div class="asset-box"><strong>${a.name}</strong><br/>(${a.rating} dice)<br/><br/><em>Notes:</em><br/><br/><br/></div>`;
+  });
+  html += `</div>`;
+}
+html += `</div>`;
+
+// Social Class & Racial Heritage
+const raceRating = priorities["Race/Culture"] || "D";
+html += `<div class="section"><h2>Social Class & Racial Heritage</h2>`;
+html += `<p><strong>Social Class:</strong> ${socialData.title} (Priority ${socialRating})<br/>${socialData.text}</p>`;
+html += `<strong>Privileges:</strong><ul>${socialData.privileges.map(p=>`<li>${p}</li>`).join('')}</ul>`;
+if (socialData.obligations.length) {
+  html += `<strong>Obligations / Social Standing:</strong><ul>${socialData.obligations.map(p=>`<li>${p}</li>`).join('')}</ul>`;
+}
+html += `<p><strong>Racial Heritage (Priority ${raceRating}):</strong></p>`;
+if (heritage.length) {
+  html += `<ul>${heritage.map(h=>`<li>${h}</li>`).join('')}</ul>`;
+} else {
+  html += `<p>None.</p>`;
+}
+html += `</div>`;
+
+// Backstory
+html += `<div class="section"><h2>Character Backstory & Details</h2>`;
+if (backdrop.length === 0 && assetPairs.length === 0) {
+  html += `<p>No data.</p>`;
+} else {
+  if (backdrop.length) {
+    html += `<h3>Backdrop Questions</h3>`;
+    backdrop.forEach(item => {
+      html += `<p><em>${item.question}</em><br/><strong>${item.answer}</strong></p>`;
+    });
+  }
+  if (assetPairs.length) {
+    html += `<h3>Asset Questionnaire</h3>`;
+    assetPairs.forEach((item, idx) => {
+      html += `<p><strong>Pair ${idx+1}</strong><br/><em>${item.question1}</em><br/>${item.answer1}<br/><em>${item.question2}</em><br/>${item.answer2}</p>`;
+    });
+  }
+}
+html += `</div>`;
+
+otherDiv.innerHTML = html;
+
+function startOver() {
+  if (confirm("Are you sure you want to clear all data and start over?")) {
+    localStorage.clear();
+    window.location.href = "step1.html";
+  }
+}
+</script>
+
+</body>
+</html>

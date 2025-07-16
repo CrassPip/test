@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Step 7 - Attribute Points</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .header {
+      font-weight: bold;
+      background: #eee;
+      padding: 6px;
+      text-align: center;
+    }
+    .cell {
+      border: 1px solid #ccc;
+      padding: 6px;
+      background: #fff;
+      border-radius: 4px;
+      text-align: center;
+      position: relative;
+    }
+    .controls button {
+      width: 25px;
+      height: 25px;
+      margin: 0 2px;
+    }
+    .big-total {
+      font-size: 1.5em;
+      margin: 5px 0;
+      display: block;
+    }
+    .attr-name {
+      font-weight: bold;
+    }
+    .points-remaining {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Character Creation - Step 7</h1>
+
+<h2>Attribute Points Assignment</h2>
+<p>Assign your Attribute Points. Each attribute can be increased by up to +2.</p>
+<p class="points-remaining">Points Remaining: <span id="pointsRemaining"></span></p>
+
+<div id="error" style="color:red; margin-bottom:10px;"></div>
+
+<div class="grid" id="attributeGrid"></div>
+
+<button onclick="resetAdjustments()">Reset</button>
+<button onclick="back()">Back</button>
+<button onclick="saveAttributes()">Finish Character</button>
+
+<script>
+// Grid definitions
+const rows = ["Power", "Speed", "Precision", "Resilience"];
+const cols = ["Physical", "Mental", "Social"];
+const attributes = {
+  "Power": ["Strength", "Intelligence", "Leadership"],
+  "Speed": ["Agility", "Wit", "Repartee"],
+  "Precision": ["Dexterity", "Perception", "Tact"],
+  "Resilience": ["Toughness", "Willpower", "Composure"]
+};
+
+// Load domain assignments
+const domainAssignments = JSON.parse(localStorage.getItem("domainAssignments") || "{}");
+if (Object.keys(domainAssignments).length === 0) {
+  document.getElementById("error").textContent = "Error: No domain assignments found.";
+}
+
+// Load attribute priority
+const priorities = JSON.parse(localStorage.getItem("priorities") || "{}");
+const attrRating = priorities["Attributes"] || "D";
+const pointsMap = {A:14, B:10, C:6, D:4};
+let totalPoints = pointsMap[attrRating];
+let pointsUsed = 0;
+
+// Load racial bonuses
+const heritage = JSON.parse(localStorage.getItem("heritageBenefits") || "[]");
+const racialBonuses = {};
+heritage.forEach(bonus => {
+  const match = bonus.match(/^\+1 (\w+)/);
+  if (match) {
+    const attr = match[1];
+    racialBonuses[attr] = 1;
+  }
+});
+
+// Render grid
+const grid = document.getElementById("attributeGrid");
+
+// Top row headers
+grid.innerHTML = `
+  <div class="header"></div>
+  <div class="header">Physical</div>
+  <div class="header">Mental</div>
+  <div class="header">Social</div>
+`;
+
+// Rows
+rows.forEach(row => {
+  grid.innerHTML += `<div class="header">${row}</div>`;
+  cols.forEach(col => {
+    const attrName = attributes[row][cols.indexOf(col)];
+    let base = domainAssignments[col] + domainAssignments[row];
+    if (racialBonuses[attrName]) {
+      base += racialBonuses[attrName];
+    }
+    grid.innerHTML += `
+      <div class="cell" id="cell-${attrName}">
+        <div class="attr-name">${attrName} (${base})</div>
+        <span class="big-total" id="total-${attrName}">${base}</span>
+        <div class="controls">
+          <button onclick="adjust('${attrName}',1)">+</button>
+          <button onclick="adjust('${attrName}',-1)">–</button>
+        </div>
+      </div>
+    `;
+  });
+});
+
+document.getElementById("pointsRemaining").textContent = totalPoints;
+
+function adjust(attrName, delta) {
+  const totalEl = document.getElementById(`total-${attrName}`);
+  const base = parseInt(document.querySelector(`#cell-${attrName} .attr-name`).textContent.match(/\((\d+)\)/)[1]);
+  const current = parseInt(totalEl.textContent);
+  const adj = current - base;
+  const newAdj = adj + delta;
+  if (newAdj < 0 || newAdj > 2) return;
+  const newPointsUsed = pointsUsed + delta;
+  if (newPointsUsed > totalPoints) return;
+
+  totalEl.textContent = base + newAdj;
+  pointsUsed = newPointsUsed;
+  document.getElementById("pointsRemaining").textContent = totalPoints - pointsUsed;
+}
+
+function resetAdjustments() {
+  rows.forEach(row => {
+    cols.forEach(col => {
+      const attrName = attributes[row][cols.indexOf(col)];
+      const base = parseInt(document.querySelector(`#cell-${attrName} .attr-name`).textContent.match(/\((\d+)\)/)[1]);
+      document.getElementById(`total-${attrName}`).textContent = base;
+    });
+  });
+  pointsUsed = 0;
+  document.getElementById("pointsRemaining").textContent = totalPoints;
+  document.getElementById("error").textContent = "";
+}
+
+function saveAttributes() {
+  if (pointsUsed > totalPoints) {
+    document.getElementById("error").textContent = "You have used more points than allowed.";
+    return;
+  }
+  const finalAttributes = {};
+  rows.forEach(row => {
+    cols.forEach(col => {
+      const attrName = attributes[row][cols.indexOf(col)];
+      const total = parseInt(document.getElementById(`total-${attrName}`).textContent);
+      finalAttributes[attrName] = total;
+    });
+  });
+  localStorage.setItem("finalAttributes", JSON.stringify(finalAttributes));
+  window.location.href = "summary.html";
+}
+
+function back() {
+  window.location.href = "step6.html";
+}
+</script>
+
+</body>
+</html>

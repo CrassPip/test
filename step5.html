@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Step 5 - Spend Asset Points</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .split {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .split div {
+      flex: 1;
+      min-width: 300px;
+    }
+    .asset-create {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .reference-box {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    #references {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Character Creation - Step 5</h1>
+
+<h2>Spend Asset Points</h2>
+<p>Review your answers and create at least 5 named Assets with ratings.</p>
+
+<div class="split">
+  <!-- Reference column -->
+  <div id="references">
+    <h3>Backdrop Questions</h3>
+    <div id="backdrop"></div>
+    <h3>Asset Questionnaire</h3>
+    <div id="questionnaire"></div>
+  </div>
+  <!-- Creation column -->
+  <div>
+    <div id="error" style="color:red; margin-bottom:10px;"></div>
+    <div id="assetList"></div>
+    <button onclick="addAsset()">+ Add Asset</button>
+  </div>
+</div>
+
+<button onclick="back()">Back</button>
+<button onclick="saveAssets()">Next: Domains & Expressions</button>
+
+<script>
+// Load prior answers
+const backdropAnswers = JSON.parse(localStorage.getItem("backdropAnswers") || "[]");
+const assetPairs = JSON.parse(localStorage.getItem("assetPairs") || "[]");
+const racialBenefits = JSON.parse(localStorage.getItem("heritageBenefits") || "[]");
+
+// Exclude +1 Stat boosts
+const statBoosts = [
+  "+1 Agility",
+  "+1 Strength",
+  "+1 Willpower",
+  "+1 Perception",
+  "+1 Wit"
+];
+const racialAssets = racialBenefits.filter(b => !statBoosts.includes(b));
+
+// Render backdrop
+const backdropDiv = document.getElementById("backdrop");
+if (backdropAnswers.length === 0) {
+  backdropDiv.innerHTML = "<p>No backdrop answers found.</p>";
+} else {
+  backdropAnswers.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "reference-box";
+    div.innerHTML = `<em>${item.question}</em><br/><strong>Answer:</strong> ${item.answer}`;
+    backdropDiv.appendChild(div);
+  });
+}
+
+// Render asset questionnaire
+const questionnaireDiv = document.getElementById("questionnaire");
+if (assetPairs.length === 0) {
+  questionnaireDiv.innerHTML = "<p>No asset questionnaire answers found.</p>";
+} else {
+  assetPairs.forEach((item, idx) => {
+    const div = document.createElement("div");
+    div.className = "reference-box";
+    div.innerHTML = `
+      <strong>Pair ${idx + 1}</strong><br/>
+      <em>${item.question1}</em><br/><strong>Answer:</strong> ${item.answer1}<br/>
+      <em>${item.question2}</em><br/><strong>Answer:</strong> ${item.answer2}
+    `;
+    questionnaireDiv.appendChild(div);
+  });
+}
+
+// Asset creation
+let assetIndex = 0;
+const assetList = document.getElementById("assetList");
+
+// Pre-fill racial assets
+racialAssets.forEach(name => {
+  const div = document.createElement("div");
+  div.className = "asset-create";
+  div.innerHTML = `
+    <label>Asset Name:</label><br/>
+    <input type="text" id="name${assetIndex}" value="${name}" style="width: 250px;"><br/>
+    <label>Rating:</label>
+    <select id="rating${assetIndex}">
+      <option value="">--Select--</option>
+      <option value="2">2 dice</option>
+      <option value="3">3 dice</option>
+      <option value="4">4 dice</option>
+      <option value="5">5 dice</option>
+      <option value="6">6 dice</option>
+      <option value="7">7 dice</option>
+      <option value="8">8 dice</option>
+    </select>
+    <button onclick="removeAsset(this)">Remove</button>
+  `;
+  assetList.appendChild(div);
+  assetIndex++;
+});
+
+// Add blank assets
+function addAsset() {
+  const div = document.createElement("div");
+  div.className = "asset-create";
+  div.innerHTML = `
+    <label>Asset Name:</label><br/>
+    <input type="text" id="name${assetIndex}" style="width: 250px;"><br/>
+    <label>Rating:</label>
+    <select id="rating${assetIndex}">
+      <option value="">--Select--</option>
+      <option value="2">2 dice</option>
+      <option value="3">3 dice</option>
+      <option value="4">4 dice</option>
+      <option value="5">5 dice</option>
+      <option value="6">6 dice</option>
+      <option value="7">7 dice</option>
+      <option value="8">8 dice</option>
+    </select>
+    <button onclick="removeAsset(this)">Remove</button>
+  `;
+  assetList.appendChild(div);
+  assetIndex++;
+}
+
+// Remove an asset
+function removeAsset(button) {
+  button.parentElement.remove();
+}
+
+// Save assets
+function saveAssets() {
+  const assets = [];
+  for (let i = 0; i < assetIndex; i++) {
+    const nameEl = document.getElementById(`name${i}`);
+    const ratingEl = document.getElementById(`rating${i}`);
+    if (nameEl && ratingEl) {
+      const name = nameEl.value.trim();
+      const rating = ratingEl.value;
+      if (name && rating) {
+        assets.push({
+          name: name,
+          rating: parseInt(rating)
+        });
+      }
+    }
+  }
+
+  if (assets.length < 5) {
+    document.getElementById("error").textContent = "Please create at least 5 assets with names and ratings.";
+    return;
+  }
+
+  localStorage.setItem("assetRatings", JSON.stringify(assets));
+  window.location.href = "step6.html";
+}
+
+// Back navigation
+function back() {
+  window.location.href = "step4.html";
+}
+
+// If no racial assets, start with 5 blank
+if (racialAssets.length === 0) {
+  for (let i = 0; i < 5; i++) {
+    addAsset();
+  }
+}
+</script>
+
+</body>
+</html>

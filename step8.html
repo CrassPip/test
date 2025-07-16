@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Character Summary</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .section {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 15px;
+      background: #fff;
+    }
+    .attribute-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .attribute-box {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: center;
+      background: #f9f9f9;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Character Summary</h1>
+
+<div id="summary"></div>
+
+<button onclick="startOver()">Start Over</button>
+
+<script>
+// Retrieve stored data
+const backdrop = JSON.parse(localStorage.getItem("backdropAnswers") || "[]");
+const heritage = JSON.parse(localStorage.getItem("heritageBenefits") || "[]");
+const assets = JSON.parse(localStorage.getItem("assetRatings") || "[]");
+const domains = JSON.parse(localStorage.getItem("domainAssignments") || "{}");
+const attributes = JSON.parse(localStorage.getItem("finalAttributes") || "{}");
+const priorities = JSON.parse(localStorage.getItem("priorities") || "{}");
+
+const summaryDiv = document.getElementById("summary");
+
+// Backdrop
+let html = `<div class="section"><h2>Backdrop Questions</h2>`;
+if (backdrop.length === 0) {
+  html += `<p>No data.</p>`;
+} else {
+  backdrop.forEach(item => {
+    html += `<p><em>${item.question}</em><br/><strong>${item.answer}</strong></p>`;
+  });
+}
+html += `</div>`;
+
+// Heritage
+html += `<div class="section"><h2>Racial Heritage Benefits</h2>`;
+if (heritage.length === 0) {
+  html += `<p>None.</p>`;
+} else {
+  html += `<ul>${heritage.map(h=>`<li>${h}</li>`).join('')}</ul>`;
+}
+html += `</div>`;
+
+// Assets
+html += `<div class="section"><h2>Assets</h2>`;
+if (assets.length === 0) {
+  html += `<p>No data.</p>`;
+} else {
+  html += `<ul>${assets.map(a=>`<li><strong>${a.name}</strong> (${a.rating} dice)</li>`).join('')}</ul>`;
+}
+html += `</div>`;
+
+// Domains & Expressions
+html += `<div class="section"><h2>Domains & Expressions</h2>`;
+if (Object.keys(domains).length === 0) {
+  html += `<p>No data.</p>`;
+} else {
+  html += `<ul>`;
+  for (let key in domains) {
+    html += `<li><strong>${key}:</strong> ${domains[key]}</li>`;
+  }
+  html += `</ul>`;
+}
+html += `</div>`;
+
+// Attributes
+html += `<div class="section"><h2>Final Attributes</h2>`;
+if (Object.keys(attributes).length === 0) {
+  html += `<p>No data.</p>`;
+} else {
+  html += `<div class="attribute-grid">`;
+  Object.keys(attributes).sort().forEach(name => {
+    html += `<div class="attribute-box"><strong>${name}</strong><br/>${attributes[name]}</div>`;
+  });
+  html += `</div>`;
+}
+html += `</div>`;
+
+// Append
+summaryDiv.innerHTML = html;
+
+function startOver() {
+  if (confirm("Are you sure you want to clear all data and start over?")) {
+    localStorage.clear();
+    window.location.href = "step1.html";
+  }
+}
+</script>
+
+</body>
+</html>
