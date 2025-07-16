@@ -59,7 +59,7 @@
 
 <button onclick="resetAdjustments()">Reset</button>
 <button onclick="back()">Back</button>
-<button onclick="saveAttributes()">Finish Character</button>
+<button onclick="saveAttributes()">Next: Final Details</button>
 
 <script>
 // Grid definitions
@@ -173,7 +173,7 @@ function saveAttributes() {
     });
   });
   localStorage.setItem("finalAttributes", JSON.stringify(finalAttributes));
-  window.location.href = "summary.html";
+  window.location.href = "step9.html";
 }
 
 function back() {
