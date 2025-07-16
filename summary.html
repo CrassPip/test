@@ -78,6 +78,7 @@ let attributes = JSON.parse(localStorage.getItem("finalAttributes") || "{}");
 const priorities = JSON.parse(localStorage.getItem("priorities") || "{}");
 const assetPairs = JSON.parse(localStorage.getItem("assetPairs") || "[]");
 const finalDetails = JSON.parse(localStorage.getItem("finalDetails") || "{}");
+const height = parseInt(localStorage.getItem("height") || "5");
 
 const finalDiv = document.getElementById("finalDetailsSection");
 
@@ -114,7 +115,7 @@ let aim = "-";
 let knockdown = "-";
 let knockout = "-";
 let endurance = "-";
-let move = "Depends on Height and Agility";
+let move = "-";
 
 if (attributes && Object.keys(attributes).length > 0) {
   const agility = attributes["Agility"] || 0;
@@ -129,6 +130,22 @@ if (attributes && Object.keys(attributes).length > 0) {
   knockdown = toughness + strength;
   knockout = toughness + willpower;
   endurance = Math.floor((toughness + willpower) / 2);
+
+
+ // Move calculation
+ move = agility;
+ if (height <= 2) {
+   move -= 3;
+ } else if (height === 3) {
+   move -= 2;
+ } else if (height === 4) {
+   move -= 1;
+ } else if (height === 6) {
+   move += 1;
+ } else if (height >= 7) {
+   move += 2;
+ }
+ if (move < 1) move = 1;
 }
 
 // Social Class
